@@ -1,0 +1,157 @@
+<body>
+
+<h2>Microphone Test</h2>
+
+<div style="margin: 25px 200px 25px 200px; text-align: center">
+    Please press <strong>Record</strong> to start the recording and read the following sentence:
+</div>
+
+<div style="margin: 25px 200px 25px 200px; font-size: 22px; text-align: center">
+    <strong>This is a test sentence.</strong>
+</div>
+
+<div style="margin: 25px 200px 25px 200px; text-align: center">
+    To record, you need to give your browser the microphone access. A red circle means recording.
+</div>
+
+<div id="controls">
+    <button class="jspsych-btn" id="recordButton">Record</button>
+    <button class="jspsych-btn" id="stopButton" disabled>Stop</button>
+</div>
+
+<p id="audio"></p>
+
+<div id="post-test" style="margin: 25px 200px 25px 200px; text-align: center" hidden>
+    Please make sure that the recording is clear. Press Next to go to the practice session.
+</div>
+
+<button id="finishButton" class="jspsych-btn-custom" disabled>Next</button>
+
+<div>
+    <img id="blank" src="img/blank.gif" width="200">
+    <img id="recording" src="img/recording.gif" width="200" hidden>
+</div>
+
+<script>
+    initialize();
+
+    function initialize() {
+        const recordButton = document.getElementById('recordButton');
+        const stopButton = document.getElementById('stopButton');
+        const blank = document.getElementById('blank');
+        const recording = document.getElementById('recording');
+
+        //add events to those 2 buttons
+        recordButton.addEventListener('click', startRecording);
+        stopButton.addEventListener('click', stopRecording);
+    }
+
+    function startRecording() {
+        //Simple constraints object, for more advanced audio features see https://addpipe.com/blog/audio-constraints-getusermedia/
+        const constraints = {audio: true, video:false};
+
+        //We're using the standard promise based getUserMedia()
+        //https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia
+        navigator.mediaDevices.getUserMedia(constraints).then(function(stream) {
+            //console.log("getUserMedia() success, stream created, initializing Recorder.js ...");
+
+            //Disable the record button until we get a success or fail from getUserMedia()
+            recordButton.disabled = true;
+            stopButton.disabled = false;
+            blank.hidden = true;
+            recording.hidden = false;
+            document.getElementById('finishButton').disabled = true;
+            document.getElementById('audio').innerHTML = '';
+            document.getElementById('post-test').hidden = true;
+
+            /*
+            create an audio context after getUserMedia is called
+            sampleRate might change after getUserMedia is called, like it does on macOS when recording through AirPods
+            the sampleRate defaults to the one set in your OS for your playback device
+            */
+            audioContext = new AudioContext();
+
+            //assign to gumStream for later use
+            gumStream = stream;
+
+            //use the stream
+            input = audioContext.createMediaStreamSource(stream);
+
+            //Create the Recorder object and configure to record mono sound (1 channel)
+            //Recording 2 channels  will double the file size
+            rec = new Recorder(input, {numChannels: 1});
+
+            //start the recording process
+            rec.record();
+            //console.log('Recording started');
+        }).catch(function(err) {
+            console.log(err)
+
+            //enable the record button if getUserMedia() fails
+            recordButton.disabled = false;
+            stopButton.disabled = true;
+        });
+    }
+
+    function stopRecording() {
+        //console.log('stopButton clicked');
+        //disable the stop button, enable the record too allow for new recordings
+        stopButton.disabled = true;
+        recordButton.disabled = false;
+        blank.hidden = false;
+        recording.hidden = true;
+        document.getElementById('post-test').hidden = false;
+
+        setTimeout(function (){
+
+            //tell the recorder to stop the recording
+            rec.stop();
+            audioContext.close()
+            gumStream.getAudioTracks()[0].stop();
+
+            //create the wav blob and pass it on to createDownloadLink
+            rec.exportWAV(createDownloadLink);
+        }, 1000);
+
+    }
+
+    function createDownloadLink(blob) {
+        const url = URL.createObjectURL(blob);
+        const au = document.createElement('audio');
+        const li = document.createElement('p');
+        li.id = 'audio';
+
+        //name of .wav file to use during upload and download (without extendion)
+        //const date = new Date().toISOString();
+        const filename = participant_id + '_micTest';
+
+        //add controls to the <audio> element
+        au.controls = true;
+        au.src = url;
+
+        //add the new audio element to li
+        li.appendChild(au);
+
+        //upload link
+        const upload = document.getElementById('finishButton');
+        upload.disabled = false;
+        upload.addEventListener('click', function(event) {
+            const xhr = new XMLHttpRequest();
+            // xhr.onload = function(e) {
+            //     if (this.readyState === 4) {
+            //         console.log('Server returned: ', e.target.responseText);
+            //     }
+            // };
+            const fd = new FormData();
+            fd.append('participant_folder', participant_id + '/')
+            fd.append('audio_data', blob, filename);
+            xhr.open('POST', 'upload.php', true);
+            xhr.send(fd);
+        })
+
+        //add the li element to the ol
+        document.getElementById('audio').replaceWith(li);
+        document.getElementById('finishButton').replaceWith(upload);
+    }
+</script>
+</body>

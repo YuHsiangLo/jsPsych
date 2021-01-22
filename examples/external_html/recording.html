@@ -1,0 +1,111 @@
+<body>
+
+<div id="stimulus_div" style="font-size: 18pt; font-weight: bold">+</div>
+
+<br>
+
+<div>
+    <img id="blank" src="img/blank.gif" width="200">
+    <img id="recording" src="img/recording.gif" width="200" hidden>
+</div>
+
+<button id="stopButton" class="jspsych-btn" disabled>Next</button>
+
+<script>
+
+    initialize();
+
+    setTimeout(() => {
+        stimulus_div = document.getElementById('stimulus_div');
+        stimulus_div.innerText = jsPsych.timelineVariable('stimulus', true);
+
+        stimulus_text = jsPsych.timelineVariable('stimulus', true);
+        block = jsPsych.timelineVariable('block', true);
+    }, 500);
+
+    function initialize() {
+        const stopButton = document.getElementById('stopButton');
+        const blank = document.getElementById('blank');
+        const recording = document.getElementById('recording');
+
+        //add events to those 2 buttons
+        stopButton.addEventListener('click', stopRecording);
+
+        startRecording();
+    }
+
+    function startRecording() {
+        //Simple constraints object, for more advanced audio features see https://addpipe.com/blog/audio-constraints-getusermedia/
+        const constraints = {audio: true, video:false};
+
+        //Disable the record button until we get a success or fail from getUserMedia()
+        stopButton.disabled = false;
+        blank.hidden = true;
+        recording.hidden = false;
+
+        //We're using the standard promise based getUserMedia()
+        //https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia
+
+        navigator.mediaDevices.getUserMedia(constraints).then(function(stream) {
+            //console.log("getUserMedia() success, stream created, initializing Recorder.js ...");
+
+            /*
+            create an audio context after getUserMedia is called
+            sampleRate might change after getUserMedia is called, like it does on macOS when recording through AirPods
+            the sampleRate defaults to the one set in your OS for your playback device
+            */
+
+            audioContext = new AudioContext();
+
+            //assign to gumStream for later use
+            gumStream = stream;
+
+            //use the stream
+            input = audioContext.createMediaStreamSource(stream);
+
+            //Create the Recorder object and configure to record mono sound (1 channel)
+            //Recording 2 channels  will double the file size
+            rec = new Recorder(input, {numChannels: 1});
+
+            //start the recording process
+            rec.record();
+            //console.log('Recording started');
+
+        }).catch(function(err) {
+            stopButton.disabled = true;
+        });
+    }
+
+    function stopRecording() {
+        //disable the stop button, enable the record too allow for new recordings
+        blank.hidden = false;
+        recording.hidden = true;
+
+        setTimeout(() => {
+            //tell the recorder to stop the recording
+            rec.stop();
+            audioContext.close()
+            gumStream.getAudioTracks()[0].stop();
+
+            //create the wav blob and pass it on to createDownloadLink
+            rec.exportWAV(createDownloadLink);
+        }, 500);
+    }
+
+    function createDownloadLink(blob) {
+        //name of .wav file to use during upload and download (without extendion)
+        const filename = participant_id + '_' + block + '_' + stimulus_text;
+        const xhr = new XMLHttpRequest();
+        // xhr.onload = function(e) {
+        //     if (this.readyState === 4) {
+        //         console.log('Server returned: ', e.target.responseText);
+        //     }
+        // };
+        const fd = new FormData();
+        fd.append('participant_folder', participant_id + '/');
+        fd.append('audio_data', blob, filename);
+        xhr.open('POST', 'upload.php', true);
+        xhr.send(fd);
+    }
+</script>
+</body>
