@@ -116,7 +116,6 @@ jsPsych.plugins['audio-mouse-tracking'] = (function() {
         tracking_zone.style.width = trial.zone_width.toString() + 'px';
         tracking_zone.style.height = trial.zone_height.toString() + 'px';
         tracking_zone.style.padding = '0';
-        tracking_zone.style.border = '1px solid black';
         tracking_zone.style.margin = 'auto';
         tracking_zone.style.left = '0';
         tracking_zone.style.right = '0';
@@ -138,10 +137,11 @@ jsPsych.plugins['audio-mouse-tracking'] = (function() {
             response_square.style.top = (trial.zone_height/2 - response.y_pos - response.response_height/2) + 'px';
             response_square.style.left = (trial.zone_width/2 + response.x_pos - response.response_width/2) + 'px';
             response_square.style.width = response.response_width + 'px';
-            response_square.style.height = response.response_height + 'px';
+            response_square.style.lineHeight = response.response_height + 'px';
             response_square.style.padding = '0';
-            response_square.style.border = '1px solid #73AD21';
+            response_square.style.border = '1px solid black';
             response_square.style.textAlign = 'center';
+            response_square.style.cursor = 'pointer';
             response_square.textContent = response.label;
             tracking_zone.appendChild(response_square);
         }
@@ -161,16 +161,15 @@ jsPsych.plugins['audio-mouse-tracking'] = (function() {
                 xs.push(res.x_pos - res.response_width/2 + e.offsetX);
                 ys.push(res.y_pos + res.response_height/2 - e.offsetY);
 
-                console.log(res.x_pos - res.response_width/2 + e.offsetX)
-                console.log(res.y_pos + res.response_height/2 - e.offsetY)
+                //console.log(res.x_pos - res.response_width/2 + e.offsetX)
+                //console.log(res.y_pos + res.response_height/2 - e.offsetY)
             } else {
                 timestamps.push(performance.now() - start_time);
                 xs.push(e.offsetX - trial.zone_width / 2.0);
                 ys.push(trial.zone_height / 2 - e.offsetY);
 
-                console.log('x:', e.offsetX - trial.zone_width / 2.0); //- trial.zone_width/2);
-                console.log('y:', trial.zone_height / 2 - e.offsetY);
-                //console.log(document.elementFromPoint(e.x, e.y).getAttribute("id"))
+                //console.log('x:', e.offsetX - trial.zone_width / 2.0); //- trial.zone_width/2);
+                //console.log('y:', trial.zone_height / 2 - e.offsetY);
             }
         })
 
