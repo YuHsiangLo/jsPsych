@@ -67,6 +67,12 @@ jsPsych.plugins['survey-text'] = (function() {
         default: null,
         description: 'HTML formatted string to display at the top of the page above all the questions.'
       },
+      postamble: {
+        type: jsPsych.plugins.parameterType.STRING,
+        pretty_name: 'Postamble',
+        default: null,
+        description: 'HTML formatted string to display at the end of the page above all the questions.'
+      },
       button_label: {
         type: jsPsych.plugins.parameterType.STRING,
         pretty_name: 'Button label',
@@ -134,6 +140,11 @@ jsPsych.plugins['survey-text'] = (function() {
         html += '<textarea id="input-'+question_index+'" name="#jspsych-survey-text-response-' + question_index + '" data-name="'+question.name+'" cols="' + question.columns + '" rows="' + question.rows + '" '+autofocus+' '+req+' placeholder="'+question.placeholder+'"></textarea>';
       }
       html += '</div>';
+    }
+
+    // add postamble
+    if(trial.postamble !== null){
+      html += '<div id="jspsych-survey-text-postamble" class="jspsych-survey-text-preamble">'+trial.postamble+'</div>';
     }
 
     // add submit button

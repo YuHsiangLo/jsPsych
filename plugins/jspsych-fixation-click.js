@@ -35,6 +35,12 @@ jsPsych.plugins['fixation-click'] = (function() {
                 default: 5,
                 description: 'Fixation radius.'
             },
+            fixation_delay: {
+                type: jsPsych.plugins.parameterType.INT,
+                pretty_name: 'Fixation delay',
+                default: 0,
+                description: 'Delay before fixation appears.'
+            },
             show_hint: {
                 type: jsPsych.plugins.parameterType.BOOL,
                 pretty_name: 'Show hints or not',
@@ -110,20 +116,6 @@ jsPsych.plugins['fixation-click'] = (function() {
             tracking_zone.appendChild(response_square);
         }
 
-        if (trial.show_hint) {
-            const fixation_text = document.createElement('div');
-            fixation_text.style.position = 'absolute';
-            fixation_text.style.width = '70px';
-            fixation_text.style.lineHeight = '20px';
-            fixation_text.style.top = (trial.zone_height / 2 - trial.y_pos - 10) + 'px';
-            fixation_text.style.left = (trial.zone_width / 2 + trial.x_pos) + 'px';
-            fixation_text.style.padding = '0';
-            fixation_text.style.textAlign = 'center';
-            fixation_text.style.color = 'red';
-            fixation_text.textContent = 'click';
-            tracking_zone.appendChild(fixation_text);
-        }
-
         const fixation_point = document.createElement('div');
         fixation_point.id = 'jspsych-fixation-click';
         fixation_point.style.position = 'absolute';
@@ -135,15 +127,35 @@ jsPsych.plugins['fixation-click'] = (function() {
         fixation_point.style.borderRadius = '50%';
         fixation_point.style.backgroundColor = 'black';
         fixation_point.style.cursor = 'pointer';
-        tracking_zone.appendChild(fixation_point);
+        //tracking_zone.appendChild(fixation_point);
 
         display_element.innerHTML = '';
         display_element.appendChild(tracking_zone);
 
-        display_element.querySelector('#jspsych-fixation-click')
-            .addEventListener('click', function(e) {
-                after_response();
-            });
+        jsPsych.pluginAPI.setTimeout(function() {
+
+            if (trial.show_hint) {
+                const fixation_text = document.createElement('div');
+                fixation_text.style.position = 'absolute';
+                fixation_text.style.width = '70px';
+                fixation_text.style.lineHeight = '20px';
+                fixation_text.style.top = (trial.zone_height / 2 - trial.y_pos - 10) + 'px';
+                fixation_text.style.left = (trial.zone_width / 2 + trial.x_pos) + 'px';
+                fixation_text.style.padding = '0';
+                fixation_text.style.textAlign = 'center';
+                fixation_text.style.color = '#a81e32';
+                fixation_text.textContent = 'click';
+                tracking_zone.appendChild(fixation_text);
+            }
+
+            tracking_zone.appendChild(fixation_point);
+
+            display_element.querySelector('#jspsych-fixation-click')
+                .addEventListener('click', function(e) {
+                    after_response();
+                });
+
+        }, trial.fixation_delay);
 
         // store response
         const response = {

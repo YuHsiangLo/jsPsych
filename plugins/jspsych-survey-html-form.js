@@ -41,7 +41,7 @@ jsPsych.plugins['survey-html-form'] = (function() {
         description: 'The HTML element ID of a form field to autofocus on.'
       },
       dataAsArray: {
-        type: jsPsych.plugins.parameterType.BOOLEAN,
+        type: jsPsych.plugins.parameterType.BOOL,
         pretty_name: 'Data As Array',
         default:  false,
         description: 'Retrieve the data as an array e.g. [{name: "INPUT_NAME", value: "INPUT_VALUE"}, ...] instead of an object e.g. {INPUT_NAME: INPUT_VALUE, ...}.'

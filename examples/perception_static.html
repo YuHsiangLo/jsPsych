@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>English Perception</title>
+    <script src="../jspsych.js"></script>
+    <script src="../plugins/jspsych-instructions.js"></script>
+    <script src="../plugins/jspsych-html-keyboard-response.js"></script>
+    <script src="../plugins/jspsych-call-function.js"></script>
+    <script src="../plugins/jspsych-survey-text.js"></script>
+    <script src="../plugins/jspsych-survey-multi-select.js"></script>
+    <script src="../plugins/jspsych-external-html.js"></script>
+    <script src="../plugins/jspsych-fullscreen.js"></script>
+    <script src="../plugins/jspsych-audio-button-response.js"></script>
+    <script src="../plugins/jspsych-audio-mouse-tracking.js"></script>
+    <script src="../plugins/jspsych-fixation-click.js"></script>
+    <script src="../plugins/jspsych-calibration.js"></script>
+    <link href="../css/jspsych.css" rel="stylesheet" type="text/css">
+    <link href="../css/timer.css" rel="stylesheet" type="text/css">
+    <link href="img/ubc.ico" rel="shortcut icon" type="image/x-icon">
+</head>
+<body>
+<script>
+    /* global variables */
+    let participant_id = jsPsych.data.getURLVariable('id');
+    let participant_consent = false;
+    const exp_timestamp = Date.now();
+
+    const total = 69;  //TODO: change this
+    let progress = 0;
+    let check_trial_num = 1;
+
+    //----------------------------------------------------------------------------------------------------------------//
+    // AUDIO FILES
+    //----------------------------------------------------------------------------------------------------------------//
+
+    const audio = [
+        'audio/noise_calib_stim.wav',
+
+        'audio/antiphase_HC_IOS.wav', 'audio/antiphase_HC_ISO.wav', 'audio/antiphase_HC_OIS.wav',
+        'audio/antiphase_HC_OSI.wav', 'audio/antiphase_HC_SIO.wav', 'audio/antiphase_HC_SOI.wav',
+
+        'audio/isolation_Step01.wav', 'audio/isolation_Step02.wav', 'audio/isolation_Step03.wav',
+        'audio/isolation_Step04.wav', 'audio/isolation_Step05.wav', 'audio/isolation_Step06.wav',
+        'audio/isolation_Step07.wav', 'audio/isolation_Step08.wav', 'audio/isolation_Step09.wav',
+
+        'audio/syllable01.wav', 'audio/syllable02.wav', 'audio/syllable03.wav',
+        'audio/syllable04.wav', 'audio/syllable05.wav', 'audio/syllable06.wav',
+        'audio/syllable07.wav', 'audio/syllable08.wav', 'audio/syllable09.wav',
+        'audio/syllable10.wav'
+    ];
+
+    //----------------------------------------------------------------------------------------------------------------//
+    // Stimuli
+    //----------------------------------------------------------------------------------------------------------------//
+
+    const headphone_stimuli = [
+        {stimulus: 'audio/antiphase_HC_IOS.wav', correct_response: 2},
+        {stimulus: 'audio/antiphase_HC_ISO.wav', correct_response: 1},
+        {stimulus: 'audio/antiphase_HC_OIS.wav', correct_response: 2},
+        {stimulus: 'audio/antiphase_HC_OSI.wav', correct_response: 1},
+        {stimulus: 'audio/antiphase_HC_SIO.wav', correct_response: 0},
+        {stimulus: 'audio/antiphase_HC_SOI.wav', correct_response: 0}
+    ];
+
+    const calibration_stimuli = [
+        {start_x_pos: 0, start_y_pos: 0, start_arrow_x_pos: 0, start_arrow_y_pos: 0, end_x_pos: - (300-25), end_y_pos: 300-25, end_arrow_x_pos: - (300-25-25), end_arrow_y_pos: 300-25-25},
+        {start_x_pos: 0, start_y_pos: 0, start_arrow_x_pos: 0, start_arrow_y_pos: 0, end_x_pos: 300-25, end_y_pos: 300-25, end_arrow_x_pos: 300-25-25, end_arrow_y_pos: 300-25-25},
+        {start_x_pos: 0, start_y_pos: 0, start_arrow_x_pos: 0, start_arrow_y_pos: 0, end_x_pos: 300-25, end_y_pos: - (300-25), end_arrow_x_pos: 300-25-25, end_arrow_y_pos: - (300-25-25)},
+        {start_x_pos: 0, start_y_pos: 0, start_arrow_x_pos: 0, start_arrow_y_pos: 0, end_x_pos: - (300-25), end_y_pos: - (300-25), end_arrow_x_pos: - (300-25-25), end_arrow_y_pos: - (300-25-25)}
+    ]
+
+    const practice_stimuli = [
+        {
+            block: 'practice', audio: 'audio/isolation_Step01.wav',
+            A: 'da', B: 'ba', C: 'la', D: 'ra',
+            fixation_x: 0, fixation_y: 0
+        },
+        {
+            block: 'practice', audio: 'audio/syllable01.wav',
+            A: 'la', B: 'ra', C: 'da', D: 'ba',
+            fixation_x: 0, fixation_y: 0
+        },
+    ];
+
+    const block1 = [
+        {
+            block: 'block_1', audio: 'audio/isolation_Step09.wav',
+            A: 'da', B: 'ba', C: 'ra', D: 'la',
+            fixation_x: 0, fixation_y: 0
+        },
+        {
+            block: 'block_1', audio: 'audio/isolation_Step04.wav',
+            A: 'ba', B: 'da', C: 'ra', D: 'la',
+            fixation_x: 0, fixation_y: 0
+        },
+        {
+            block: 'block_1', audio: 'audio/isolation_Step05.wav',
+            A: 'ra', B: 'da', C: 'ba', D: 'la',
+            fixation_x: 0, fixation_y: 0
+        },
+        // {
+        //     block: 'block_1', audio: 'audio/isolation_Step06.wav',
+        //     A: 'ra', B: 'da', C: 'ba', D: 'la',
+        //     fixation_x: 0, fixation_y: 0
+        // },
+        // {
+        //     block: 'block_1', audio: 'audio/syllable10.wav',
+        //     A: 'da', B: 'ra', C: 'la', D: 'ba',
+        //     fixation_x: 0, fixation_y: 0
+        // },
+        // {
+        //     block: 'block_1', audio: 'audio/syllable05.wav',
+        //     A: 'la', B: 'ra', C: 'da', D: 'ba',
+        //     fixation_x: 0, fixation_y: 0
+        // },
+        // {
+        //     block: 'block_1', audio: 'audio/syllable06.wav',
+        //     A: 'ba', B: 'la', C: 'ra', D: 'da',
+        //     fixation_x: 0, fixation_y: 0
+        // },
+        // {
+        //     block: 'block_1', audio: 'audio/syllable07.wav',
+        //     A: 'ra', B: 'ba', C: 'da', D: 'la',
+        //     fixation_x: 0, fixation_y: 0
+        // },
+    ];
+
+    //----------------------------------------------------------------------------------------------------------------//
+    // FUNCTIONS
+    //----------------------------------------------------------------------------------------------------------------//
+
+    const check_consent = () => {
+        if (document.getElementById('consent_radio').checked) {
+            participant_consent = true;
+            return true;
+        } else {
+            return confirm("Consent is necessary for participation in this experiment. If you don't consent, the experiment will end immediately. Are you sure?")
+        }
+    }
+
+    const saveData = (name, data) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', 'write_data.php'); // 'write_data.php' is the path to the php file described above.
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.send(JSON.stringify({filename: name, filedata: data}));
+    }
+
+    const JSON2CSV = (objArray) => {
+        var array = typeof objArray != 'object' ? JSON.parse(objArray) : objArray;
+        var line = '';
+        var result = '';
+        var columns = [];
+
+        var i = 0;
+        for (var j = 0; j < array.length; j++) {
+            for (var key in array[j]) {
+                var keyString = key + "";
+                keyString = '"' + keyString.replace(/"/g, '""') + '",';
+                if (!columns.includes(key)) {
+                    columns[i] = key;
+                    line += keyString;
+                    i++;
+                }
+            }
+        }
+
+        line = line.slice(0, -1);
+        result += line + '\r\n';
+
+        for (var i = 0; i < array.length; i++) {
+            var line = '';
+            for (var j = 0; j < columns.length; j++) {
+                var value = (typeof array[i][columns[j]] === 'undefined') ? '' : array[i][columns[j]];
+                var valueString = value + "";
+                line += '"' + valueString.replace(/"/g, '""') + '",';
+            }
+
+            line = line.slice(0, -1);
+            result += line + '\r\n';
+        }
+
+        return result;
+    }
+
+    const pass_check = {
+        type: 'call-function',
+        func: function() {
+            const correct_trials = jsPsych.data.get().filter({
+                correct: true,
+                trial_type: 'audio-button-response'
+            }).count();
+            if (correct_trials < 5) {
+                jsPsych.endExperiment(
+                    '<div style="margin: 25px 200px 25px 200px; text-align: center">' +
+                    '<p>' +
+                    'You didn\'t pass the hearing test. ' +
+                    'You answered ' + correct_trials + ' of 6 correctly, and 5 is the minimum passing score.' +
+                    '</p>' +
+                    '</div>' +
+
+                    '<div style="margin: 25px 200px 25px 200px; text-align: center">' +
+                    '<p>You are strongly encouraged to wear headphones and complete this study in a quiet location.</p>' +
+                    '<p>If you were wearing headphones, please try again by refreshing the page.</p>' +
+                    '<p>If this was not your first attempt, and you are still having difficulty passing the hearing test and would still like to participate in this study, please contact Roger Lo at <a href="roger.lo@ubc.ca">roger.lo@ubc.ca</a>.</p>' +
+                    '</div>'
+                );
+            }
+        },
+        data: {block: 'headphone_check'}
+    }
+
+    const save_data = {
+        type: 'call-function',
+        func: function () {
+            jsPsych.data.addProperties({
+                participant_id: participant_id,
+                timestamp: exp_timestamp
+            });
+            saveData(String(participant_id), jsPsych.data.get().csv());
+            saveData(String(participant_id + '_distraction'), JSON2CSV(distractions));
+            //console.log('Results saved');
+
+        },
+        data: {block: 'save_data'}
+    }
+
+    //----------------------------------------------------------------------------------------------------------------//
+    // INSTRUCTIONS
+    //----------------------------------------------------------------------------------------------------------------//
+
+    const id_check = {
+        type: 'survey-text',
+        button_label: 'Confirm',
+        preamble: `<div style="margin-left: 250px; margin-right: 250px">
+                       <p>Welcome to the experiment!</p>
+                       <p>Your SONA ID is <strong>${participant_id}</strong>.</p>
+                   </div>`,
+        postamble: '<br><div style="margin-left: 250px; margin-right: 250px">Click <strong>Confirm</strong> to read the consent form.</div><br>',
+        questions: [
+            {prompt: '<div style="margin-left: 250px; margin-right: 250px">If this is incorrect, please type your SONA ID below:</div>', placeholder: 'Correct SONA ID', name: 'sona_id', required: false},
+        ],
+        on_finish: (data) => {
+            const correct_id = JSON.parse(data.responses)['sona_id'];
+            if (correct_id) { participant_id = correct_id; }
+
+            progress += 1;
+            jsPsych.setProgressBar(progress/total);
+        },
+        data: {block: 'id_check'}
+    }
+
+    const consent = {
+        type: 'external-html',
+        url: 'external_html/consent_form.html',
+        cont_btn: 'start',
+        check_fn: check_consent,
+        on_finish: () => {
+            if (participant_consent) {
+                progress += 1;
+                jsPsych.setProgressBar(progress/total);
+            } else {
+                //jsPsych.endCurrentTimeline();
+                jsPsych.endExperiment(
+                    '<div style="margin: 25px 200px 25px 200px; text-align: center">' +
+                    '<p>Consent is necessary for participation in this experiment. Thank you for your time.</p>' +
+                    '<p>If this was a mistake, please restart the experiment by refreshing this page.</p>' +
+                    '<p>If you have questions, please contact Roger Lo at <a href="roger.lo@ubc.ca">roger.lo@ubc.ca</a>.</p>' +
+                    '</div>'
+                );
+            }
+        },
+        data: {block: 'consent_form'}
+    }
+
+    const full_screen_enter = {
+        type: 'fullscreen',
+        fullscreen_mode: true,
+        message:
+            '<div style="margin: 25px 200px 25px 200px; text-align: center">' +
+            '<p>Please complete this experiment somewhere quiet, turn off any music, and close any websites/tabs that may make any notification sounds.</p>' +
+            '<p>You\'re strongly encouraged to use <strong style="color: #a81e32">headphones</strong> for the entire experiment.</p>' +
+            '<p>You\'re encouraged to use a <strong style="color: #a81e32">physical mouse</strong> for this experiment if you have one.</p>' +
+            '<p>Before entering the experiment, please test and adjust your volume level.</p>' +
+            '<audio id="player" src="audio/noise_calib_stim.wav">Please use a browser that supports .wav files</audio>' +
+            '<div><button class="jspsych-btn" onclick="document.getElementById(\'player\').play()"><strong>Click here to test your volume level.</strong></button></div>' +
+            '<p>The experiment will switch to <strong>full screen</strong> mode when you press <strong>Continue</storng>.</p>' +
+            '</div>',
+        on_finish: () => {
+            progress += 1;
+            jsPsych.setProgressBar(progress/total);
+        },
+        data: {block: 'full_screen'}
+    }
+
+    const full_screen_leave = {
+        type: 'fullscreen',
+        fullscreen_mode: false,
+        on_finish: () => {
+            progress += 1;
+            jsPsych.setProgressBar(progress/total);
+        },
+        data: {block: 'full_screen'}
+    }
+
+    const volume_check = {
+        type: 'instructions',
+        show_clickable_nav: true,
+        pages: [
+            //p1
+            '<div style="margin: 25px 200px 25px 200px; text-align: center">' +
+            '<p>You\'ll first complete a hearing test.</p>' +
+            '<p>In this test, you will hear three tones.</p>' +
+            '<p>You\'ll need to determine which tone is the <strong style="color: #a81e32">quietest</strong> of the three by selecting from the choices:</p>' +
+            '<p>1st, 2nd, or 3rd.</p>' +
+            '<p>There will be 6 questions in total.</p>' +
+            '<p>You\'re strongly encouraged to use headphones for this hearing test and for the rest of the experiment.</p>' +
+            '<br>' +
+            '<p>Click <strong>Next</strong> to begin the hearing test.</p>' +
+            '</div>'
+        ],
+        on_finish: () => {
+            progress += 1;
+            jsPsych.setProgressBar(progress/total);
+        },
+        data: {block: 'headphone_check'}
+    }
+
+    const headphone_passed = {
+        type: 'instructions',
+        show_clickable_nav: true,
+        pages: [
+            '<p>You\'ve passed the hearing test!</p>' +
+            '<br>' +
+            '<p>Click <strong>Next</strong> to continue.</p>'
+        ],
+        on_finish: () => {
+            progress += 1;
+            jsPsych.setProgressBar(progress/total);
+        },
+        data: {block: 'headphone_check'}
+    }
+
+    const calibration_instructions = {
+        type: 'instructions',
+        show_clickable_nav: true,
+        pages: [
+            '<div style="margin: 25px 200px 25px 200px; text-align: center">' +
+            '<p>We\'ll start with some calibration.</p>' +
+            '<p>In the next 4 trials, you\'ll first see a dot in the middle.</p>' +
+            '<p>After you <strong style="color: #a81e32">click on the dot</strong> with a mouse or touchpad, another dot will appear at one of the four corners, together with an arrow.</p>' +
+            '<p>You should then <strong style="color: #a81e32">follow the arrow</strong> and <strong style="color: #a81e32">click on the new dot</strong>.</p>' +
+            '<p>Note that you only have <strong style="color: #a81e32">2 seconds</strong> to respond after you click on the first, central dot.</p>' +
+            '<br>' +
+            '<p>Click <strong>Next</strong> to begin the calibration session.</p>' +
+            '</div>'
+        ],
+        on_finish: () => {
+            progress += 1;
+            jsPsych.setProgressBar(progress/total);
+        },
+        data: {block: 'calibration'}
+    }
+
+    const pre_practice = {
+        type: 'instructions',
+        show_clickable_nav: true,
+        pages: [
+            '<div style="margin: 25px 200px 25px 200px; text-align: center">' +
+            '<p>In each trial, you\'ll first see <strong style="color: #a81e32">4 options</strong> at the four corners.</p>' +
+            '<p>You should familiarize yourself with the words and the locations of the four options.</p>' +
+            '<p>Then a black dot will appear in the middle.</p>' +
+            '<p>After you use the mouse or touchpad to <strong style="color: #a81e32">click on the dot</strong>, you\'ll hear a word.</p>' +
+            '<p>You should then use the mouse or touchpad to <strong style="color: #a81e32">click on the option</strong> that you think the spoken word corresponds to.</p>' +
+            '<p>Please do so as <strong style="color: #a81e32">quickly and accurately</strong> as you can.</p>' +
+            '<p>Note that you only have <strong style="color: #a81e32">2 seconds</strong> to respond after you hear the word.</p>' +
+            '<br>' +
+            '<p>Click <strong>Next</strong> to begin the practice session.</p>' +
+            '</div>'
+        ],
+        on_finish: () => {
+            progress += 1;
+            jsPsych.setProgressBar(progress/total);
+        },
+        data: {block: 'instruction'}
+    }
+
+    const post_practice = {
+        type: 'instructions',
+        show_clickable_nav: true,
+        pages: [
+            //P1
+            '<div style="margin: 25px 200px 25px 200px; text-align: center">' +
+            '<p>End of the practice session.</p>' +
+            '<p>In the actual part, you\'ll <strong style="color: #a81e32">not</strong> see the "click" hint or the timer.</p>' +
+            '<br>' +
+            '<p>Press <strong>Next</strong> to enter to the actual part.</p>' +
+            '</div>'
+        ],
+        on_finish: () => {
+            progress += 1;
+            jsPsych.setProgressBar(progress/total);
+        },
+        data: {block: 'instruction'}
+    }
+
+    const pre_survey = {
+        type: 'instructions',
+        show_clickable_nav: true,
+        pages: [
+            '<div style="margin: 25px 200px 25px 200px; text-align: center">' +
+            '<p>Click <strong>Next</strong> to answer some additional questions.</p>' +
+            '</div>'
+        ],
+        on_finish: () => {
+            progress += 1;
+            jsPsych.setProgressBar(progress/total);
+        },
+        data: {block: 'instruction'}
+    }
+
+    const debrief = {
+        type: 'html-keyboard-response',
+        choices: jsPsych.ALL_KEYS,
+        stimulus: () => {
+            return '<div style="margin: 25px 200px 25px 200px; text-align: center">' +
+                '<p>Thank you for participating in the experiment!</p>' +
+                '<p>In order to receive compensation for this study without delay, hit any key to be redirected to the SONA website.</p>' +
+                '</div>'
+        },
+        on_finish: () => {
+            window.open('https://www.jspsych.org/plugins/jspsych-survey-text/');
+        },
+        data: {block: 'debrief'}
+    }
+
+    //----------------------------------------------------------------------------------------------------------------//
+    // TRIAL TYPES
+    //----------------------------------------------------------------------------------------------------------------//
+
+    const headphone_trial = {
+        type: 'audio-button-response',
+        stimulus: jsPsych.timelineVariable('stimulus'),
+        prompt: () => {
+            return '<div>' + check_trial_num + ' / 6</div>' +
+                '<div>Which of the tree tones was the quietest?</div>'
+        },
+        choices: ['1st', '2nd', '3rd'],
+        response_ends_trial: true,
+        post_trial_gap: 1000,
+        on_finish: data => {
+            data.correct = data.button_pressed === data.correct_response;
+
+            check_trial_num += 1;
+            progress += 1;
+            jsPsych.setProgressBar(progress/total);
+        },
+        data: {block: 'headphone_check', correct_response: jsPsych.timelineVariable('correct_response')},
+    }
+
+    /* calibration */
+    const calibration_fixation = {
+        type: 'fixation-click',
+        zone_width: 600,
+        zone_height: 600,
+        x_pos: jsPsych.timelineVariable('start_x_pos'),
+        y_pos: jsPsych.timelineVariable('start_y_pos'),
+        fixation_radius: 5,
+        show_hint: true,
+        responses: [],
+        data: {block: 'calibration'}
+    }
+
+    const calibration = {
+        type: 'calibration',
+        show_timer: true,
+        trial_duration: 2000,
+        zone_width: 600,
+        zone_height: 600,
+        start_x_pos: jsPsych.timelineVariable('start_x_pos'),
+        start_y_pos: jsPsych.timelineVariable('start_y_pos'),
+        start_arrow_x_pos: jsPsych.timelineVariable('start_arrow_x_pos'),
+        start_arrow_y_pos: jsPsych.timelineVariable('start_arrow_y_pos'),
+        start_radius: 5,
+        end_x_pos: jsPsych.timelineVariable('end_x_pos'),
+        end_y_pos: jsPsych.timelineVariable('end_y_pos'),
+        end_arrow_x_pos: jsPsych.timelineVariable('end_arrow_x_pos'),
+        end_arrow_y_pos: jsPsych.timelineVariable('end_arrow_y_pos'),
+        end_radius: 5,
+        show_hint_arrow: true,
+        show_hint: true,
+        data: {block: 'calibration'}
+    }
+
+    const fixation_static_hint = {
+        type: 'fixation-click',
+        zone_width: 600,
+        zone_height: 600,
+        x_pos: 0,
+        y_pos: 0,
+        fixation_radius: 5,
+        fixation_delay: 1000,
+        show_hint: true,
+        responses: [
+            {label: jsPsych.timelineVariable('A'), x_pos: -300+25, y_pos: 300-25, response_width: 50, response_height: 50},
+            {label: jsPsych.timelineVariable('B'), x_pos: 300-25, y_pos: 300-25, response_width: 50, response_height: 50},
+            {label: jsPsych.timelineVariable('C'), x_pos: 300-25, y_pos: -300+25, response_width: 50, response_height: 50},
+            {label: jsPsych.timelineVariable('D'), x_pos: -300+25, y_pos: -300+25, response_width: 50, response_height: 50}
+        ],
+        data: {block: 'fixation'}
+    }
+
+    const fixation_static_no_hint = {
+        type: 'fixation-click',
+        zone_width: 600,
+        zone_height: 600,
+        x_pos: 0,
+        y_pos: 0,
+        fixation_radius: 5,
+        fixation_delay: 1000,
+        show_hint: false,
+        responses: [
+            {label: jsPsych.timelineVariable('A'), x_pos: -300+25, y_pos: 300-25, response_width: 50, response_height: 50},
+            {label: jsPsych.timelineVariable('B'), x_pos: 300-25, y_pos: 300-25, response_width: 50, response_height: 50},
+            {label: jsPsych.timelineVariable('C'), x_pos: 300-25, y_pos: -300+25, response_width: 50, response_height: 50},
+            {label: jsPsych.timelineVariable('D'), x_pos: -300+25, y_pos: -300+25, response_width: 50, response_height: 50}
+        ],
+        data: {block: 'fixation'}
+    }
+
+    const mouse_tracking_practice = {
+        type: 'audio-mouse-tracking',
+        stimulus: jsPsych.timelineVariable('audio'),
+        zone_width: 600,
+        zone_height: 600,
+        show_timer: true,
+        trial_duration: 2000,
+        responses: [
+            {label: jsPsych.timelineVariable('A'), x_pos: -300+25, y_pos: 300-25, response_width: 50, response_height: 50},
+            {label: jsPsych.timelineVariable('B'), x_pos: 300-25, y_pos: 300-25, response_width: 50, response_height: 50},
+            {label: jsPsych.timelineVariable('C'), x_pos: 300-25, y_pos: -300+25, response_width: 50, response_height: 50},
+            {label: jsPsych.timelineVariable('D'), x_pos: -300+25, y_pos: -300+25, response_width: 50, response_height: 50}
+        ],
+        data: {block: jsPsych.timelineVariable('block')}
+    }
+
+    const mouse_tracking_real = {
+        type: 'audio-mouse-tracking',
+        stimulus: jsPsych.timelineVariable('audio'),
+        zone_width: 600,
+        zone_height: 600,
+        show_timer: false,
+        trial_duration: 2000,
+        responses: [
+            {label: jsPsych.timelineVariable('A'), x_pos: -300+25, y_pos: 300-25, response_width: 50, response_height: 50},
+            {label: jsPsych.timelineVariable('B'), x_pos: 300-25, y_pos: 300-25, response_width: 50, response_height: 50},
+            {label: jsPsych.timelineVariable('D'), x_pos: -300+25, y_pos: -300+25, response_width: 50, response_height: 50},
+            {label: jsPsych.timelineVariable('C'), x_pos: 300-25, y_pos: -300+25, response_width: 50, response_height: 50},
+        ],
+        data: {block: jsPsych.timelineVariable('block')}
+    }
+
+    const feedback = {
+        type: 'html-keyboard-response',
+        trial_duration: 500,
+        stimulus: function(){
+            const last_trial_rt = jsPsych.data.get().last(1).values()[0].rt;
+            if (last_trial_rt) {
+                return "<p style='color: #176f58'>Response recorded.</p>";
+            } else {
+                return "<p style='color: #a81e32'>No respond detected.</p>";
+            }
+        },
+        data: {block: 'feedback'}
+    }
+
+    const survey_1 = {
+        type: 'survey-text',
+        questions: [
+            {prompt: '<div style="margin-left: 250px; margin-right: 250px"><strong>(1)</strong> What type of computer did you do the experiment on?<sup>*</sup></div>', placeholder: 'Desktop / Laptop / Other', name: 'computer_type', required: true},
+            {prompt: '<div style="margin-left: 250px; margin-right: 250px"><strong>(2)</strong> What pointing device did you use for the experiment?<sup>*</sup></div>', placeholder: 'Mouse / Touchpad / Trackpoint / Other', name: 'pointing_device', required: true},
+            {prompt: '<div style="margin-left: 250px; margin-right: 250px"><strong>(3)</strong> Did you wear headphones for the experiment?<sup>*</sup></div>', placeholder: 'Yes / No', name: 'use_headphones', required: true},
+            {prompt: '<div style="margin-left: 250px; margin-right: 250px"><strong>(4)</strong> Have you used any "strategies" when doing the experiment?</div>', placeholder: '(Optional)', name: 'computer_type', required: false, rows: 5}
+        ],
+        on_finish: () => {
+            progress += 1;
+            jsPsych.setProgressBar(progress/total);
+        }
+    }
+
+    const survey_2 = {
+        type: 'survey-multi-select',
+        questions: [
+            {
+                prompt: '<strong>(5)</strong> Check the descriptions about the experiment that you\'ve noticed (<strong>NOT</strong> all of them are present):<sup>*</sup>',
+                options: [
+                    'There were more trials with the spoken words being <em>fee</em> or <em>me</em> than there were with <em>bee</em> or <em>pea</em>.',
+                    'The words "bee" and "pea" are always next to each other.',
+                    'There were trials where the spoken word sounded ambiguous between <em>bee</em> and <em>pea</em>.',
+                    'The four word options always occupied the same corner.'
+                ],
+                horizontal: false,
+                required: true,
+                name: 'exp_descriptions'
+            }
+        ],
+        randomize_question_order: false
+    }
+
+    const short_break = {
+        type: 'instructions',
+        show_clickable_nav: true,
+        pages: [
+            '<div style="margin: 25px 200px 25px 200px; text-align: center">' +
+            '<p>You may take a break now!</p>' +
+            '<br>' +
+            '<p>Click <strong>Next</strong> to resume the experiment.</p>' +
+            '</div>'
+        ],
+        on_finish: () => {
+            progress += 1;
+            jsPsych.setProgressBar(progress/total);
+        }
+    }
+
+    //----------------------------------------------------------------------------------------------------------------//
+    // PROCEDURES
+    //----------------------------------------------------------------------------------------------------------------//
+
+    const headphone_procedure = {
+        timeline: [headphone_trial],
+        timeline_variables: headphone_stimuli,
+        randomize_order: false,  //#TODO: change
+        repetitions: 1
+    }
+
+    const calibration_procedure = {
+        timeline: [calibration_fixation, calibration, feedback],
+        timeline_variables: calibration_stimuli,
+        repetitions: 1,
+        randomize_order: true
+    }
+
+    const practice_procedure = {
+        timeline: [fixation_static_hint, mouse_tracking_practice, feedback],
+        timeline_variables: practice_stimuli,
+        repetitions: 1,
+        randomize_order: true
+    }
+
+    const block1_procedure = {
+        timeline: [fixation_static_no_hint, mouse_tracking_real, feedback],
+        timeline_variables: block1,
+        repetitions: 1,
+        randomize_order: true
+    }
+
+    const block2_procedure = {
+        timeline: [fixation_static_no_hint, mouse_tracking_real, feedback],
+        timeline_variables: block1,
+        repetitions: 1,
+        randomize_order: true
+    }
+
+    const block3_procedure = {
+        timeline: [fixation_static_no_hint, mouse_tracking_real, feedback],
+        timeline_variables: block1,
+        repetitions: 1,
+        randomize_order: true
+    }
+
+    //----------------------------------------------------------------------------------------------------------------//
+    // TIMELINE
+    //----------------------------------------------------------------------------------------------------------------//
+    const timeline = [
+        id_check, consent, full_screen_enter,
+        //volume_check, headphone_procedure, pass_check, headphone_passed,
+        calibration_instructions, calibration_procedure,
+        //pre_practice, practice_procedure, post_practice,
+        //block1_procedure, short_break, block2_procedure, short_break, block3_procedure,
+        //pre_survey, survey_1, survey_2,
+        save_data, full_screen_leave, debrief
+    ]
+
+    const distractions = [];
+
+    jsPsych.init({
+        timeline: timeline,
+        show_progress_bar: true,
+        auto_update_progress_bar: false,
+        preload_audio: audio,
+        on_interaction_data_update: (data) => {
+            distractions.push(data);
+        },
+        on_finish: () => {
+            jsPsych.data.displayData();
+            console.log(distractions)
+        },
+        exclusions: {
+            min_width: 600,
+            min_height: 600,
+            audio: true
+        },
+        on_close: () => {
+            jsPsych.data.addProperties({
+                participant_id: participant_id,
+                timestamp: exp_timestamp
+            });
+            saveData(String(participant_id) + '_incomplete', jsPsych.data.get().csv());
+        }
+    })
+</script>
+</body>
+</html>

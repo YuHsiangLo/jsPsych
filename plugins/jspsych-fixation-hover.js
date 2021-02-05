@@ -35,11 +35,41 @@ jsPsych.plugins['fixation-hover'] = (function() {
                 default: 5,
                 description: 'Fixation radius.'
             },
+            start_arrow_x_pos: {
+                type: jsPsych.plugins.parameterType.INT,
+                pretty_name: 'Start arrow x position',
+                default: 0,
+                description: 'x position for the start arrow point in pixel.'
+            },
+            start_arrow_y_pos: {
+                type: jsPsych.plugins.parameterType.INT,
+                pretty_name: 'Start arrow y position',
+                default: 0,
+                description: 'y position for the start arrow point in pixel.'
+            },
+            end_arrow_x_pos: {
+                type: jsPsych.plugins.parameterType.INT,
+                pretty_name: 'End arrow x position',
+                default: 0,
+                description: 'x position for the end arrow point in pixel.'
+            },
+            end_arrow_y_pos: {
+                type: jsPsych.plugins.parameterType.INT,
+                pretty_name: 'End arrow y position',
+                default: 0,
+                description: 'y position for the end arrow point in pixel.'
+            },
             show_hint: {
                 type: jsPsych.plugins.parameterType.BOOL,
                 pretty_name: 'Show hints or not',
                 default: false,
                 description: 'If true, a hint will show next to fixation.'
+            },
+            show_hint_arrow: {
+                type: jsPsych.plugins.parameterType.BOOL,
+                pretty_name: 'Show hint arrow or not',
+                default: false,
+                description: 'If true, a hint arrow will be displayed.'
             },
             responses: {
                 type: jsPsych.plugins.parameterType.COMPLEX,
@@ -84,17 +114,53 @@ jsPsych.plugins['fixation-hover'] = (function() {
     plugin.trial = function(display_element, trial) {
         // Ref: https://www.smashingmagazine.com/2013/08/absolute-horizontal-vertical-centering-css/
 
+        const background = document.createElement('div');
+        background.style.display = 'block';
+        background.style.position = 'absolute';
+        background.style.width = trial.zone_width.toString() + 'px';
+        background.style.height = trial.zone_height.toString() + 'px';
+        background.style.padding = '0';
+        background.style.margin = 'auto';
+        background.style.left = '0';
+        background.style.right = '0';
+        background.style.top = '0';
+        background.style.bottom = '0';
+
+        if (trial.show_hint_arrow) {
+            background.innerHTML = `
+            <svg width="${trial.zone_width}" height="${trial.zone_height}">
+            <defs>
+                <style>
+                    line {
+                        stroke-dasharray: 11, 5;
+                        stroke: #176f58;
+                    }
+                </style>
+                <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
+                <polygon points="0 0, 10 3.5, 0 7" fill="#176f58">
+            </marker>
+            </defs>
+            <line x1="${trial.zone_width/2 + trial.start_arrow_x_pos}"
+                  y1="${trial.zone_height/2 - trial.start_arrow_y_pos}"
+                  x2="${trial.zone_width/2 + trial.end_arrow_x_pos}"
+                  y2="${trial.zone_height/2 - trial.end_arrow_y_pos}"
+                  stroke-width="1" marker-end="url(#arrowhead)">
+            </svg>
+            `;
+        }
+
         const tracking_zone = document.createElement('div');
         tracking_zone.style.display = 'block';
         tracking_zone.style.position = 'absolute';
-        tracking_zone.style.width = trial.zone_width.toString() + 'px';
-        tracking_zone.style.height = trial.zone_height.toString() + 'px';
+        tracking_zone.style.width = trial.zone_width + 'px';
+        tracking_zone.style.height = trial.zone_height + 'px';
         tracking_zone.style.padding = '0';
         tracking_zone.style.margin = 'auto';
         tracking_zone.style.left = '0';
         tracking_zone.style.right = '0';
         tracking_zone.style.top = '0';
         tracking_zone.style.bottom = '0';
+        background.appendChild(tracking_zone);
 
         for (let i = 0; i < trial.responses.length; i++) {
             const response = trial.responses[i];
@@ -120,7 +186,7 @@ jsPsych.plugins['fixation-hover'] = (function() {
             fixation_text.style.left = (trial.zone_width / 2 + trial.x_pos) + 'px';
             fixation_text.style.padding = '0';
             fixation_text.style.textAlign = 'center';
-            fixation_text.style.color = 'red';
+            fixation_text.style.color = '#a81e32';
             fixation_text.textContent = 'hover';
             tracking_zone.appendChild(fixation_text);
         }
@@ -129,8 +195,8 @@ jsPsych.plugins['fixation-hover'] = (function() {
         fixation_point.id = 'jspsych-fixation-hover';
         fixation_point.style.display = 'block';
         fixation_point.style.position = 'absolute';
-        fixation_point.style.width = (trial.fixation_radius * 2).toString() + 'px';
-        fixation_point.style.height = (trial.fixation_radius * 2).toString() + 'px';
+        fixation_point.style.width = (trial.fixation_radius * 2) + 'px';
+        fixation_point.style.height = (trial.fixation_radius * 2) + 'px';
         fixation_point.style.margin = 'auto';
         fixation_point.style.padding = '0';
         fixation_point.style.borderRadius = '50%';
@@ -142,7 +208,7 @@ jsPsych.plugins['fixation-hover'] = (function() {
         tracking_zone.appendChild(fixation_point)
 
         display_element.innerHTML = '';
-        display_element.appendChild(tracking_zone);
+        display_element.appendChild(background);
 
         display_element.querySelector('#jspsych-fixation-hover')
             .addEventListener('mouseenter', function(e) {

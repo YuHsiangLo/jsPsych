@@ -9,27 +9,27 @@
  **/
 
 jsPsych.plugins["audio-button-response"] = (function() {
-	var plugin = {};
+  var plugin = {};
 
-	jsPsych.pluginAPI.registerPreload('audio-button-response', 'stimulus', 'audio');
+  jsPsych.pluginAPI.registerPreload('audio-button-response', 'stimulus', 'audio');
 
-	plugin.info = {
-		name: 'audio-button-response',
-		description: '',
-		parameters: {
-			stimulus: {
-				type: jsPsych.plugins.parameterType.AUDIO,
+  plugin.info = {
+    name: 'audio-button-response',
+    description: '',
+    parameters: {
+      stimulus: {
+        type: jsPsych.plugins.parameterType.AUDIO,
         pretty_name: 'Stimulus',
-				default: undefined,
-				description: 'The audio to be played.'
-			},
-			choices: {
-				type: jsPsych.plugins.parameterType.STRING,
+        default: undefined,
+        description: 'The audio to be played.'
+      },
+      choices: {
+        type: jsPsych.plugins.parameterType.STRING,
         pretty_name: 'Choices',
-				default: undefined,
-				array: true,
-				description: 'The button labels.'
-			},
+        default: undefined,
+        array: true,
+        description: 'The button labels.'
+      },
       button_html: {
         type: jsPsych.plugins.parameterType.HTML_STRING,
         pretty_name: 'Button HTML',
@@ -78,7 +78,7 @@ jsPsych.plugins["audio-button-response"] = (function() {
         pretty_name: 'Response allowed while playing',
         default: true,
         description: 'If true, then responses are allowed while the audio is playing. '+
-          'If false, then the audio must finish playing before a response is accepted.'
+            'If false, then the audio must finish playing before a response is accepted.'
       }
     }
   }
@@ -114,7 +114,7 @@ jsPsych.plugins["audio-button-response"] = (function() {
       }
     }
 
-  	//display buttons
+    //display buttons
     var buttons = [];
     if (Array.isArray(trial.button_html)) {
       if (trial.button_html.length == trial.choices.length) {
@@ -133,16 +133,16 @@ jsPsych.plugins["audio-button-response"] = (function() {
       var str = buttons[i].replace(/%choice%/g, trial.choices[i]);
       html += '<div class="jspsych-audio-button-response-button" style="cursor: pointer; display: inline-block; margin:'+trial.margin_vertical+' '+trial.margin_horizontal+'" id="jspsych-audio-button-response-button-' + i +'" data-choice="'+i+'">'+str+'</div>';
     }
-		html += '</div>';
+    html += '</div>';
 
-		//show prompt if there is one
-		if (trial.prompt !== null) {
-			html += trial.prompt;
-		}
+    //show prompt if there is one
+    if (trial.prompt !== null) {
+      html += trial.prompt;
+    }
 
-		display_element.innerHTML = html;
+    display_element.innerHTML = html;
 
-		for (var i = 0; i < trial.choices.length; i++) {
+    for (var i = 0; i < trial.choices.length; i++) {
       display_element.querySelector('#jspsych-audio-button-response-button-' + i).addEventListener('click', function(e){
         var choice = e.currentTarget.getAttribute('data-choice'); // don't use dataset for jsdom compatibility
         after_response(choice);
@@ -165,9 +165,9 @@ jsPsych.plugins["audio-button-response"] = (function() {
       var endTime = performance.now();
       var rt = endTime - startTime;
       if(context !== null){
-				endTime = context.currentTime;
-				rt = Math.round((endTime - startTime) * 1000);
-			}
+        endTime = context.currentTime;
+        rt = Math.round((endTime - startTime) * 1000);
+      }
       response.button = parseInt(choice);
       response.rt = rt;
 
@@ -189,17 +189,17 @@ jsPsych.plugins["audio-button-response"] = (function() {
       // kill any remaining setTimeout handlers
       jsPsych.pluginAPI.clearAllTimeouts();
 
-			// stop the audio file if it is playing
-			// remove end event listeners if they exist
-			if(context !== null){
-				source.stop();
+      // stop the audio file if it is playing
+      // remove end event listeners if they exist
+      if(context !== null){
+        source.stop();
         source.removeEventListener('ended', end_trial);
         source.removeEventListener('ended', enable_buttons);
-			} else {
-				audio.pause();
+      } else {
+        audio.pause();
         audio.removeEventListener('ended', end_trial);
         audio.removeEventListener('ended', enable_buttons);
-			}
+      }
 
       // gather the data to store for the trial
       var trial_data = {
@@ -223,10 +223,10 @@ jsPsych.plugins["audio-button-response"] = (function() {
       }
     }
 
-		// start time
+    // start time
     var startTime = performance.now();
 
-		// start audio
+    // start audio
     if(context !== null){
       startTime = context.currentTime;
       source.start(startTime);
